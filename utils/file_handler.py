@@ -7,7 +7,15 @@ from datetime import datetime
 
 
 def save_state(DATA_DIR: str, INDEX_PATH: str, faiss_index, metadata, METADATA_PATH):
-    """Persist FAISS index and metadata to disk."""
+    """Save FAISS index and metadata to disk for persistence.
+    
+    Args:
+        DATA_DIR: Directory path for data storage
+        INDEX_PATH: File path for FAISS index
+        faiss_index: FAISS index instance to save
+        metadata: Metadata dictionary to save
+        METADATA_PATH: File path for metadata JSON
+    """
     # ensure directory
     os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -36,6 +44,14 @@ def save_state(DATA_DIR: str, INDEX_PATH: str, faiss_index, metadata, METADATA_P
 
 
 def get_all_headlines(metadata):
+    """Retrieve all headlines from metadata in list format.
+    
+    Args:
+        metadata: Metadata dictionary containing headlines
+        
+    Returns:
+        list: List of headline dictionaries with id, headline, timestamp, source
+    """
     return [
         {
             "id": k,
@@ -66,15 +82,22 @@ def get_grouped_output(metadata) -> Dict[str, List[Dict[str, str]]]:
     return grouped
 
 
-# Regex patterns
+# Regex patterns for parsing news text
 SECTION_HEADER_RE = re.compile(r"Fetching:\s*(.+)")
 HEADLINE_RE = re.compile(r"^\d+\.\s*(.+)\s+\(([^()]+)\)$")
 
 
 def parse_news_block_to_faiss(raw_text: str):
-    """
-    Parse raw news block into a list of (headline, timestamp, source) tuples,
-    ready to feed into add_or_update().
+    """Parse raw news text into structured headline data.
+    
+    Extracts headlines, timestamps, and sources from formatted news text.
+    Handles various timestamp formats and skips relative timestamps.
+    
+    Args:
+        raw_text: Raw news text with headlines and sources
+        
+    Returns:
+        list: List of (headline, timestamp, source) tuples
     """
     parsed = []
     current_source = None

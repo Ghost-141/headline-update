@@ -8,6 +8,11 @@ from typing import Dict, Any, Tuple
 
 
 def get_config():
+    """Initialize and return configuration parameters for the headline processing system.
+
+    Returns:
+        tuple: (model, DIM, faiss_index, DATA_DIR, INDEX_PATH, METADATA_PATH, SIM_THRESHOLD)
+    """
 
     model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
@@ -103,7 +108,15 @@ def l2_to_cosine_dist(l2: float) -> float:
 
 
 def embed_text(model, text: str) -> np.ndarray:
-    """Return a normalized embedding (float32) for the given text."""
+    """Generate normalized text embedding using sentence transformer model.
+
+    Args:
+        model: SentenceTransformer model instance
+        text: Input text to embed
+
+    Returns:
+        np.ndarray: Normalized embedding vector (float32)
+    """
     emb = model.encode([text], normalize_embeddings=True)
     return np.array(emb, dtype="float32")
 
@@ -117,7 +130,17 @@ def insert_new(
     faiss_index,
     metadata,
 ):
-    """Helper to insert a new vector+metadata with new id."""
+    """Insert new headline vector and metadata into FAISS index.
+
+    Args:
+        emb: Text embedding vector
+        headline: News headline text
+        timestamp: Publication timestamp
+        source: News source name
+        next_id: Next available ID for insertion
+        faiss_index: FAISS index instance
+        metadata: Metadata dictionary
+    """
     id_arr = np.array([next_id], dtype="int64")
     faiss_index.add_with_ids(emb, id_arr)
     metadata[next_id] = {
@@ -131,7 +154,18 @@ def insert_new(
 def rebuild_index_with_replacement(
     replace_id: int, new_emb: np.ndarray, metadata, model, DIM
 ):
-    """Fallback when remove_ids is not supported: rebuild entire index, replacing vector for replace_id."""
+    """Rebuild FAISS index when vector replacement fails.
+
+    Args:
+        replace_id: ID of vector to replace
+        new_emb: New embedding vector
+        metadata: Current metadata dictionary
+        model: SentenceTransformer model
+        DIM: Vector dimension
+
+    Returns:
+        faiss.IndexIDMap: New FAISS index with replaced vector
+    """
     ids = []
     vecs = []
     for id_, meta in metadata.items():
@@ -163,7 +197,23 @@ def add_or_update(
     model,
     DIM: int,
 ) -> Tuple[int, faiss.IndexIDMap]:
-    """Returns updated next_id and potentially new faiss_index"""
+    """Add new headline or update existing one based on similarity threshold.
+
+    Args:
+        headline: News headline text
+        timestamp: Publication timestamp
+        source: News source name
+        embed_func: Function to generate embeddings
+        SIM_THRESHOLD: Similarity threshold for duplicate detection
+        metadata: Metadata dictionary
+        faiss_index: FAISS index instance
+        next_id: Next available ID
+        model: SentenceTransformer model
+        DIM: Vector dimension
+
+    Returns:
+        tuple: (updated_next_id, updated_faiss_index)
+    """
 
     emb = embed_func(headline)
 
@@ -213,10 +263,19 @@ def add_or_update(
     return next_id + 1, faiss_index
 
 
-
-
 def rebuild_with_unique_headlines(model, faiss_index, metadata, DIM, SIM_THRESHOLD):
-    """Rebuild database keeping only unique headlines sorted by timestamp."""
+    """Rebuild database with only unique headlines sorted by timestamp.
+
+    Args:
+        model: SentenceTransformer model
+        faiss_index: Current FAISS index
+        metadata: Current metadata dictionary
+        DIM: Vector dimension
+        SIM_THRESHOLD: Similarity threshold for duplicate detection
+
+    Returns:
+        tuple: (new_index, new_metadata, next_id)
+    """
     unique_headlines = get_sorted_unique_headlines(model, metadata, SIM_THRESHOLD)
 
     new_index = faiss.IndexIDMap(faiss.IndexFlatL2(DIM))
