@@ -1,0 +1,18 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+*.ipynb
+
+# Virtual environments
+.venv
+.env
+
+# Databse Files
+*.db
+*.json
+*.index
+*.txt
