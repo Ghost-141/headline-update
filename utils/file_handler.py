@@ -6,9 +6,24 @@ import re
 from datetime import datetime
 
 
+def read_file(file_path):
+    """
+    Read file from a given path and return as string.
+
+    Args:
+        file_path: Path to the file to read
+
+    Returns:
+        str: Contents of the file
+    """
+    with open(file_path, "r", encoding="utf-8") as f:
+        text = f.read()
+    return text
+
+
 def save_state(DATA_DIR: str, INDEX_PATH: str, faiss_index, metadata, METADATA_PATH):
     """Save FAISS index and metadata to disk for persistence.
-    
+
     Args:
         DATA_DIR: Directory path for data storage
         INDEX_PATH: File path for FAISS index
@@ -45,10 +60,10 @@ def save_state(DATA_DIR: str, INDEX_PATH: str, faiss_index, metadata, METADATA_P
 
 def get_all_headlines(metadata):
     """Retrieve all headlines from metadata in list format.
-    
+
     Args:
         metadata: Metadata dictionary containing headlines
-        
+
     Returns:
         list: List of headline dictionaries with id, headline, timestamp, source
     """
@@ -89,13 +104,13 @@ HEADLINE_RE = re.compile(r"^\d+\.\s*(.+)\s+\(([^()]+)\)$")
 
 def parse_news_block_to_faiss(raw_text: str):
     """Parse raw news text into structured headline data.
-    
+
     Extracts headlines, timestamps, and sources from formatted news text.
     Handles various timestamp formats and skips relative timestamps.
-    
+
     Args:
         raw_text: Raw news text with headlines and sources
-        
+
     Returns:
         list: List of (headline, timestamp, source) tuples
     """

@@ -7,6 +7,26 @@ import json
 from typing import Dict, Any, Tuple
 
 
+MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
+LOCAL_DIR = "./models/all-mpnet-base-v2"
+DATA_DIR = "database"
+
+
+def get_model():
+    """
+    Ensures the model is available locally, then loads it.
+    """
+    if not os.path.exists(LOCAL_DIR) or not os.listdir(LOCAL_DIR):
+        print("Downloading full model from HF...")
+        model = SentenceTransformer(MODEL_NAME)
+        model.save(LOCAL_DIR)
+    else:
+        print("Loading model from local directory...")
+        model = SentenceTransformer(LOCAL_DIR)
+        print("✔ Model loaded successfully!")
+    return model
+
+
 def get_config():
     """Initialize and return configuration parameters for the headline processing system.
 
@@ -14,13 +34,14 @@ def get_config():
         tuple: (model, DIM, faiss_index, DATA_DIR, INDEX_PATH, METADATA_PATH, SIM_THRESHOLD)
     """
 
-    model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
+    # model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
+
+    model = get_model()
 
     DIM = 768
 
     faiss_index = faiss.IndexIDMap(faiss.IndexFlatL2(DIM))
 
-    DATA_DIR = "database"
     INDEX_PATH = os.path.join(DATA_DIR, "vector_store.index")
     METADATA_PATH = os.path.join(DATA_DIR, "metadata.json")
 

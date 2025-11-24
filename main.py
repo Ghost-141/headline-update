@@ -6,6 +6,7 @@ from utils.utils import (
     add_or_update,
 )
 from utils.file_handler import (
+    read_file,
     save_state,
     parse_news_block_to_faiss,
 )
@@ -30,8 +31,9 @@ faiss_index, metadata, next_id = load_faiss_and_metadata(
 existing_ids = set(metadata.keys())
 
 # Parse and process new data
-with open("raw_data/test.txt", "r", encoding="utf-8") as f:
-    text = f.read()
+# with open("raw_data/test.txt", "r", encoding="utf-8") as f:
+#     text = f.read()
+text = read_file("raw_data/test.txt")
 
 incoming_data = parse_news_block_to_faiss(text)
 

@@ -16,3 +16,8 @@ wheels/
 *.json
 *.index
 *.txt
+
+
+# Folders
+
+*models
